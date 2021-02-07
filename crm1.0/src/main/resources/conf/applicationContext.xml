@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context
+                           https://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/tx
+                           http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <!--声明配置文件的位置-->
+    <context:property-placeholder location="classpath:conf/jdbc.properties"/>
+
+    <!--声明数据源DataSource-->
+    <bean id="myDataSource" class="com.alibaba.druid.pool.DruidDataSource"
+          init-method="init" destroy-method="close">
+        <!--set注入给DruidDataSource提供连接数据库信息-->
+        <property name="url" value="${jdbc_url}"/>
+        <property name="username" value="${jdbc_username}"/>
+        <property name="password" value="${jdbc_password}"/>
+        <property name="maxActive" value="${jdbc_maxActive}"/>
+    </bean>
+
+    <!--声明mybatis提供的SqlSessionFactoryBean类，内部创建SqlSessionFactory
+        SqlSessionFactory factory = new SqlSessionFactoryBuilder().build(Resources.getResourceAsStream("mybatis.xml"));
+    -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!--set注入提供数据库连接池信息-->
+        <property name="dataSource" ref="myDataSource"/>
+        <!--mybatis主配置文件的位置(特殊用法：使用value)-->
+        <property name="configLocation" value="classpath:conf/mybatis.xml"/>
+    </bean>
+
+    <!--mybatis扫描器，创建dao对象，MapperScannerConfigurer在内部调用getMapper()生成每个dao接口的代理对象
+        SqlSession sqlSession = factory.openSession(true);
+        StudentDao studentDao = sqlSession.getMapper(StudentDao.class);
+    -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!--指定SqlSessionFactory对象的id-->
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+        <!--指定dao接口所在的包名，扫描包中的所有接口，得到每个接口的dao对象(对象名称为接口名称首字母小写)-->
+        <property name="basePackage" value="com.powerwolf.settings.dao"/>
+    </bean>
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+        <property name="basePackage" value="com.powerwolf.workbench.dao"/>
+    </bean>
+
+    <!--声明组件扫描器(service注解所在包名)-->
+    <context:component-scan base-package="com.powerwolf.settings.service" />
+    <context:component-scan base-package="com.powerwolf.workbench.service" />
+
+    <!--声明事务管理器-->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <!--连接数据库信息，指定数据源-->
+        <property name="dataSource" ref="myDataSource" />
+    </bean>
+
+    <!--开启事务注解驱动，告诉spring使用注解管理事务-->
+    <tx:annotation-driven transaction-manager="transactionManager" />
+
+
+    <!--声明数据字典相关的service对象-->
+    <bean id="dicService" class="com.powerwolf.settings.service.impl.DicServiceImpl">
+        <property name="dicTypeDao" ref="dicTypeDao" />
+        <property name="dicValueDao" ref="dicValueDao" />
+    </bean>
+</beans>

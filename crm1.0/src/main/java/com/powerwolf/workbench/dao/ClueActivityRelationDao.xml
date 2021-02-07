@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.powerwolf.workbench.dao.ClueActivityRelationDao">
+    <delete id="delete">
+        delete from tbl_clue_activity_relation where id = #{id}
+    </delete>
+
+    <select id="getRelationByClueId" resultType="ClueActivityRelation">
+        select * from tbl_clue_activity_relation where clueId = #{clueId}
+    </select>
+
+    <insert id="addRelation">
+        insert into tbl_clue_activity_relation set
+            id = #{id},
+            clueId = #{clueId},
+            activityId = #{activityId}
+    </insert>
+
+    <delete id="deleteByRelationId">
+        delete from tbl_clue_activity_relation where id = #{relationId}
+    </delete>
+</mapper>

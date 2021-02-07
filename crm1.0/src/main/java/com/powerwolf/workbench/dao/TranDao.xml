@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.powerwolf.workbench.dao.TranDao">
+    <select id="getCountGroupByStage" resultType="map">
+        select
+            stage as name, count(*) as value
+        from tbl_tran
+        group by stage
+    </select>
+
+    <update id="updateTran">
+        update tbl_tran set stage = #{stage}, editBy = #{editBy}, editTime = #{editTime} where id = #{id}
+    </update>
+
+    <select id="getTranById" resultType="Tran">
+        select
+            t.id,
+            u.name as owner,
+            t.money,
+            t.name,
+            t.expectedDate,
+            cus.name as customerId,
+            t.stage,
+            t.type,
+            t.source,
+            a.name as activityId,
+            con.fullname as contactsId,
+            t.createBy,
+            t.createTime,
+            t.editBy,
+            t.editTime,
+            t.description,
+            t.contactSummary,
+            t.nextContactTime
+        from tbl_tran t
+        join tbl_user u
+        on t.owner = u.id
+        left join tbl_activity a
+        on t.activityId = a.id
+        join tbl_customer cus
+        on t.customerId = cus.id
+        left join tbl_contacts con
+        on t.contactsId = con.id
+        where t.id = #{id}
+    </select>
+
+    <select id="getTotalByCondition" resultType="int">
+        select count(*) from tbl_tran t
+    </select>
+
+    <select id="pageList" resultType="Tran">
+        select
+            t.id,
+            u.name as owner,
+            t.money,
+            t.name,
+            t.expectedDate,
+            cus.name as customerId,
+            t.stage,
+            t.type,
+            t.source,
+            a.name as activityId,
+            con.fullname as contactsId,
+            t.createBy,
+            t.createTime,
+            t.editBy,
+            t.editTime,
+            t.description,
+            t.contactSummary,
+            t.nextContactTime
+        from tbl_tran t
+        join tbl_user u
+        on t.owner = u.id
+        join tbl_activity a
+        on t.activityId = a.id
+        join tbl_customer cus
+        on t.customerId = cus.id
+        join tbl_contacts con
+        on t.contactsId = con.id
+        order by t.createTime desc
+        limit #{skipCount}, #{pageSize}
+    </select>
+
+    <insert id="addTran">
+        insert into tbl_tran (
+            id,
+            owner,
+            money,
+            name,
+            expectedDate,
+            customerId,
+            stage,
+            type,
+            source,
+            activityId,
+            contactsId,
+            createBy,
+            createTime,
+            description,
+            contactSummary,
+            nextContactTime
+        ) values (
+            #{id},
+            #{owner},
+            #{money},
+            #{name},
+            #{expectedDate},
+            #{customerId},
+            #{stage},
+            #{type},
+            #{source},
+            #{activityId},
+            #{contactsId},
+            #{createBy},
+            #{createTime},
+            #{description},
+            #{contactSummary},
+            #{nextContactTime}
+        )
+    </insert>
+</mapper>
