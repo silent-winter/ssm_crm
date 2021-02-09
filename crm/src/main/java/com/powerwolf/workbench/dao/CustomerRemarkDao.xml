@@ -4,6 +4,41 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.powerwolf.workbench.dao.CustomerRemarkDao">
+    <select id="getCustomerRemarkById" resultType="CustomerRemark">
+        select * from tbl_customer_remark where id = #{id}
+    </select>
+
+    <delete id="deleteRemarkById">
+        delete from tbl_customer_remark where id = #{id}
+    </delete>
+
+    <update id="editRemark">
+        update tbl_customer_remark set
+            noteContent = #{noteContent},
+            editBy = #{editBy},
+            editTime = #{editTime},
+            editFlag = #{editFlag}
+        where id = #{id}
+    </update>
+
+    <select id="getRemarkListByCustomerId" resultType="CustomerRemark">
+        select * from tbl_customer_remark where customerId = #{customerId}
+    </select>
+
+    <delete id="deleteRemarkByIds">
+        delete from tbl_customer_remark where customerId in
+        <foreach collection="array" item="cid" open="(" close=")" separator=",">
+            #{cid}
+        </foreach>
+    </delete>
+
+    <select id="getTotalRemarkByIds" resultType="int">
+        select count(*) from tbl_customer_remark where customerId in
+        <foreach collection="array" item="cid" open="(" close=")" separator=",">
+            #{cid}
+        </foreach>
+    </select>
+
     <insert id="addCustomerRemark">
         insert into tbl_customer_remark (
             id,

@@ -4,6 +4,111 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.powerwolf.workbench.dao.CustomerDao">
+    <select id="getCustomerInfoById" resultType="Customer">
+        select
+            c.id,
+            u.name as owner,
+            c.name,
+            c.website,
+            c.phone,
+            c.createBy,
+            c.createTime,
+            c.editBy,
+            c.editTime,
+            c.contactSummary,
+            c.nextContactTime,
+            c.description,
+            c.address
+        from tbl_customer c
+        left join tbl_user u
+        on u.id = c.owner
+        where c.id = #{id}
+    </select>
+
+    <delete id="deleteCustomerByIds">
+        delete from tbl_customer where id in
+        <foreach collection="array" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <update id="updateCustomer">
+        update tbl_customer set
+            owner = #{owner},
+            name = #{name},
+            website = #{website},
+            phone = #{phone},
+            editBy = #{editBy},
+            editTime = #{editTime},
+            contactSummary = #{contactSummary},
+            nextContactTime = #{nextContactTime},
+            description = #{description},
+            address = #{address}
+        where id = #{id}
+    </update>
+
+    <select id="getCustomerById" resultType="Customer">
+        select * from tbl_customer where id = #{id}
+    </select>
+
+    <select id="getCustomerListByCondition" resultType="Customer">
+        select
+            c.id,
+            u.name as owner,
+            c.name,
+            c.website,
+            c.phone,
+            c.createBy,
+            c.createTime,
+            c.editBy,
+            c.editTime,
+            c.contactSummary,
+            c.nextContactTime,
+            c.description,
+            c.address
+        from tbl_customer c
+        left join tbl_user u
+        on u.id = c.owner
+        <where>
+            <if test="name != null and name != ''">
+                c.name like '%' #{name} '%'
+            </if>
+            <if test="owner != null and owner != ''">
+                and u.name like '%' #{owner} '%'
+            </if>
+            <if test="phone != null and phone != ''">
+                and c.phone like '%' #{phone} '%'
+            </if>
+            <if test="website != null and website != ''">
+                and c.website like '%' #{website} '%'
+            </if>
+        </where>
+        order by c.createTime desc
+        limit #{skipCount}, #{pageSize}
+    </select>
+
+    <select id="getTotalByCondition" resultType="int">
+        select
+            count(*)
+        from tbl_customer c
+        left join tbl_user u
+        on u.id = c.owner
+        <where>
+            <if test="name != null and name != ''">
+                c.name like '%' #{name} '%'
+            </if>
+            <if test="owner != null and owner != ''">
+                and c.owner like '%' #{owner} '%'
+            </if>
+            <if test="phone != null and phone != ''">
+                and c.phone like '%' #{phone} '%'
+            </if>
+            <if test="website != null and website != ''">
+                and c.website like '%' #{website} '%'
+            </if>
+        </where>
+    </select>
+
     <select id="getNameListByCustomerName" resultType="String">
         select name from tbl_customer where name like '%' #{name} '%'
     </select>
