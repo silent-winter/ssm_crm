@@ -4,6 +4,45 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.powerwolf.workbench.dao.TranDao">
+    <delete id="deleteTranByIds">
+        delete from tbl_tran where id in
+        <foreach collection="array" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="getTranListByCustomerId" resultType="Tran">
+        select
+            t.id,
+            u.name as owner,
+            t.money,
+            t.name,
+            t.expectedDate,
+            cus.name as customerId,
+            t.stage,
+            t.type,
+            t.source,
+            a.name as activityId,
+            con.fullname as contactsId,
+            t.createBy,
+            t.createTime,
+            t.editBy,
+            t.editTime,
+            t.description,
+            t.contactSummary,
+            t.nextContactTime
+        from tbl_tran t
+        join tbl_user u
+        on t.owner = u.id
+        left join tbl_activity a
+        on t.activityId = a.id
+        join tbl_customer cus
+        on t.customerId = cus.id
+        left join tbl_contacts con
+        on t.contactsId = con.id
+        where t.customerId = #{customerId}
+    </select>
+
     <select id="getCountGroupByStage" resultType="map">
         select
             stage as name, count(*) as value

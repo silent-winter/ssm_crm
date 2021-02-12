@@ -4,6 +4,24 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.powerwolf.workbench.dao.ContactsDao">
+    <delete id="deleteContactsByIds">
+        delete from tbl_contacts where id in
+        <foreach collection="array" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="getContactsListByNameAndCustomerId" resultType="Contacts">
+        select * from tbl_contacts
+        <where>
+            customerId = #{customerId}
+            <if test="name != null and name != ''">
+                and fullname like '%' #{name} '%'
+            </if>
+        </where>
+        order by createTime desc
+    </select>
+
     <select id="getContactsListByName" resultType="Contacts">
         select * from tbl_contacts
         <where>

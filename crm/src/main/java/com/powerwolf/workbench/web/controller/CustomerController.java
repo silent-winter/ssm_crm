@@ -5,9 +5,13 @@ import com.powerwolf.settings.service.UserService;
 import com.powerwolf.utils.DateTimeUtil;
 import com.powerwolf.utils.UUIDUtil;
 import com.powerwolf.vo.PaginationVO;
+import com.powerwolf.workbench.domain.Contacts;
 import com.powerwolf.workbench.domain.Customer;
 import com.powerwolf.workbench.domain.CustomerRemark;
+import com.powerwolf.workbench.domain.Tran;
+import com.powerwolf.workbench.service.ContactsService;
 import com.powerwolf.workbench.service.CustomerService;
+import com.powerwolf.workbench.service.TranService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,6 +31,10 @@ public class CustomerController {
     private CustomerService customerService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private TranService tranService;
+    @Autowired
+    private ContactsService contactsService;
 
 
     @RequestMapping("/pageList.do")
@@ -145,5 +153,102 @@ public class CustomerController {
         customerRemark.setCreateBy(((User) session.getAttribute("user")).getName());
         customerRemark.setEditFlag("0");
         return customerService.addCustomerRemark(customerRemark);
+    }
+
+    @RequestMapping("/createTran.do")
+    public ModelAndView createTran(HttpSession session, String id){
+        //获取用户列表和当前登录用户
+        List<User> userList = userService.getUserList();
+        User user = (User) session.getAttribute("user");
+
+        //转发
+        ModelAndView mv = new ModelAndView();
+        mv.addObject("userList", userList);
+        mv.addObject("customer", customerService.getCustomerInfo(id));
+        mv.setViewName("/workbench/customer/saveTran.jsp");
+        return mv;
+    }
+
+    @RequestMapping("/saveTran.do")
+    public ModelAndView saveTran(Tran tran, String customerName, HttpSession session){
+        ModelAndView mv = new ModelAndView();
+        mv.setViewName("redirect:/workbench/customer/index.jsp");
+
+        tran.setCreateBy(((User) session.getAttribute("user")).getName());
+        tran.setCreateTime(DateTimeUtil.getSysTime());
+        tran.setId(UUIDUtil.getUUID());
+
+        try {
+            tranService.addTran(tran, customerName);
+            mv.addObject("success", true);
+        } catch (Exception e){
+            e.printStackTrace();
+            mv.addObject("success", false);
+        }
+        return mv;
+    }
+
+    @RequestMapping("/searchContacts.do")
+    @ResponseBody
+    public List<Contacts> getContactsList(String name, String customerId){
+        Map<String, String> map = new HashMap<>();
+        map.put("name", name);
+        map.put("customerId", customerId);
+        return contactsService.getContactsListByCustomerId(map);
+    }
+
+    @RequestMapping("/getTranList.do")
+    @ResponseBody
+    public List<Tran> showTranList(String customerId){
+        return tranService.getTranList(customerId);
+    }
+
+    @RequestMapping("/getContactsList.do")
+    @ResponseBody
+    public List<Contacts> showContactsList(String customerId){
+        Map<String, String> map = new HashMap<>();
+        map.put("name", "");
+        map.put("customerId", customerId);
+        return contactsService.getContactsListByCustomerId(map);
+    }
+
+    @RequestMapping("/createContacts.do")
+    @ResponseBody
+    public Map<String, Boolean> saveContacts(Contacts contacts, HttpSession session){
+        contacts.setId(UUIDUtil.getUUID());
+        contacts.setCreateBy(((User) session.getAttribute("user")).getName());
+        contacts.setCreateTime(DateTimeUtil.getSysTime());
+
+        Map<String, Boolean> map = new HashMap<>();
+        map.put("success", contactsService.addContacts(contacts));
+        return map;
+    }
+
+    @RequestMapping("/deleteContacts.do")
+    @ResponseBody
+    public Map<String, Boolean> deleteContacts(String[] id){
+        Map<String, Boolean> map = new HashMap<>();
+        try {
+            contactsService.deleteContacts(id);
+            map.put("success", true);
+        } catch (Exception e){
+            e.printStackTrace();
+            map.put("success", false);
+        }
+        return map;
+    }
+
+    @RequestMapping("/deleteTran.do")
+    @ResponseBody
+    public Map<String, Boolean> deleteTran(String[] id){
+        Map<String, Boolean> map = new HashMap<>();
+        try {
+            tranService.deleteTran(id);
+            map.put("success", true);
+        } catch (Exception e){
+            e.printStackTrace();
+            map.put("success", false);
+        }
+        return map;
     }
 }

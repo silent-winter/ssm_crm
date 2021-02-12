@@ -23,4 +23,10 @@ public interface TranDao {
 
     //分组查询各阶段的交易数量
     List<Map<String, Object>> getCountGroupByStage();
+
+    //根据客户id查询所有交易
+    List<Tran> getTranListByCustomerId(String customerId);
+
+    //根据id数组删除交易
+    int deleteTranByIds(String[] id);
 }

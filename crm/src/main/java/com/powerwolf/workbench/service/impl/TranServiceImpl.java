@@ -6,9 +6,11 @@ import com.powerwolf.vo.PaginationVO;
 import com.powerwolf.workbench.dao.CustomerDao;
 import com.powerwolf.workbench.dao.TranDao;
 import com.powerwolf.workbench.dao.TranHistoryDao;
+import com.powerwolf.workbench.dao.TranRemarkDao;
 import com.powerwolf.workbench.domain.Customer;
 import com.powerwolf.workbench.domain.Tran;
 import com.powerwolf.workbench.domain.TranHistory;
+import com.powerwolf.workbench.domain.TranRemark;
 import com.powerwolf.workbench.service.TranService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,8 @@ public class TranServiceImpl implements TranService {
     private CustomerDao customerDao;
     @Autowired
     private TranHistoryDao tranHistoryDao;
+    @Autowired
+    private TranRemarkDao tranRemarkDao;
 
 
     @Override
@@ -119,5 +123,22 @@ public class TranServiceImpl implements TranService {
         vo.setDataList(dataList);
 
         return vo;
+    }
+
+    @Override
+    public List<Tran> getTranList(String customerId) {
+        return tranDao.getTranListByCustomerId(customerId);
+    }
+
+    @Override
+    @Transactional
+    public void deleteTran(String[] id) {
+        if(tranDao.deleteTranByIds(id) != 1){
+            throw new RuntimeException("删除交易失败");
+        }
+
+        if(tranRemarkDao.getTotalByTranId(id[0]) != tranRemarkDao.deleteTranRemarkByTranId(id[0])){
+            throw new RuntimeException("删除交易备注失败");
+        }
     }
 }

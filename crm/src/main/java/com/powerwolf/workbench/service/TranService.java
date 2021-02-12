@@ -25,4 +25,10 @@ public interface TranService {
 
     //取得交易总数和各阶段的数量
     PaginationVO<Map<String, Object>> getCharts();
+
+    //根据客户id查询交易列表
+    List<Tran> getTranList(String customerId);
+
+    //删除交易
+    void deleteTran(String[] id);
 }
